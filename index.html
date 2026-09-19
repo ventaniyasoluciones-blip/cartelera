@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cartelera Interactiva | La Vía del Milisegundo</title>
+    <!-- Fuentes estilo retro digital y neón -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --neon-blue: #00f3ff;
+            --neon-white: #ffffff;
+            --neon-pink: #ff007f;
+            --bg-dark: #050814;
+            --panel-bg: #0b1120;
+            --border-glow: 0 0 10px rgba(0, 243, 255, 0.4);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--neon-white);
+            font-family: 'Share Tech Mono', monospace;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        header {
+            background: linear-gradient(180deg, #0a1128 0%, #050814 100%);
+            border-bottom: 2px solid var(--neon-blue);
+            box-shadow: var(--border-glow);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .brand h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+            color: var(--neon-blue);
+            text-shadow: 0 0 8px var(--neon-blue);
+            letter-spacing: 2px;
+        }
+
+        .brand p {
+            font-size: 0.85rem;
+            color: #8ab4f8;
+            letter-spacing: 1px;
+        }
+
+        /* Reloj estilo Casio 80s / Milisegundos */
+        .casio-clock-container {
+            background: #000;
+            border: 2px solid var(--neon-blue);
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.3) inset, 0 0 10px var(--neon-blue);
+            padding: 8px 16px;
+            border-radius: 4px;
+            text-align: right;
+        }
+
+        .time-display {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.6rem;
+            color: var(--neon-blue);
+            text-shadow: 0 0 10px var(--neon-blue);
+            letter-spacing: 2px;
+        }
+
+        .date-display {
+            font-size: 0.85rem;
+            color: var(--neon-white);
+            text-shadow: 0 0 8px var(--neon-white);
+            letter-spacing: 1px;
+        }
+
+        .main-layout {
+            display: grid;
+            grid-template-columns: 1fr 340px;
+            flex: 1;
+            gap: 20px;
+            padding: 20px;
+            max-width: 1600px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        @media (max-width: 1024px) {
+            .main-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Grilla de estampas (Repositorio GitHub) */
+        .gallery-section {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .section-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.1rem;
+            color: var(--neon-blue);
+            border-left: 4px solid var(--neon-blue);
+            padding-left: 10px;
+            text-shadow: 0 0 5px var(--neon-blue);
+        }
+
+        .grid-estampas {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 12px;
+            max-height: 75vh;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+
+        .grid-estampas::-webkit-scrollbar {
+            width: 6px;
+        }
+        .grid-estampas::-webkit-scrollbar-thumb {
+            background: var(--neon-blue);
+            border-radius: 3px;
+        }
+
+        .estampa-card {
+            background: var(--panel-bg);
+            border: 1px solid #1e293b;
+            border-radius: 6px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .estampa-card:hover {
+            border-color: var(--neon-blue);
+            box-shadow: 0 0 12px rgba(0, 243, 255, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .estampa-card.selected {
+            border-color: var(--neon-pink);
+            box-shadow: 0 0 15px var(--neon-pink);
+        }
+
+        .estampa-thumb {
+            width: 100%;
+            height: 110px;
+            object-fit: cover;
+            background: #000;
+        }
+
+        .estampa-info {
+            padding: 6px;
+            font-size: 0.75rem;
+        }
+
+        .estampa-id {
+            color: var(--neon-blue);
+            font-weight: bold;
+        }
+
+        .estampa-hash {
+            color: #94a3b8;
+            font-size: 0.65rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Panel de Edición de Sponsor (Ventana Interactiva) */
+        .editor-panel {
+            background: var(--panel-bg);
+            border: 2px solid var(--neon-blue);
+            box-shadow: var(--border-glow);
+            border-radius: 8px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            height: fit-content;
+        }
+
+        .editor-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1rem;
+            color: var(--neon-pink);
+            text-shadow: 0 0 5px var(--neon-pink);
+            border-bottom: 1px solid #1e293b;
+            padding-bottom: 8px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .form-group label {
+            font-size: 0.8rem;
+            color: #94a3b8;
+            letter-spacing: 1px;
+        }
+
+        .form-group input, .form-group textarea {
+            background: #000;
+            border: 1px solid var(--neon-blue);
+            color: var(--neon-white);
+            padding: 8px;
+            border-radius: 4px;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.9rem;
+        }
+
+        .form-group input:focus, .form-group textarea:focus {
+            outline: none;
+            box-shadow: 0 0 8px var(--neon-blue);
+        }
+
+        /* Vista previa interactiva Canvas */
+        .preview-container {
+            width: 100%;
+            background: #000;
+            border: 1px dashed var(--neon-blue);
+            border-radius: 6px;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            min-height: 200px;
+        }
+
+        #preview-canvas {
+            max-width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .btn-action {
+            background: linear-gradient(90deg, #00f3ff, #0077ff);
+            color: #000;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            border: none;
+            padding: 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 0 10px rgba(0, 243, 255, 0.5);
+            transition: all 0.2s;
+            text-align: center;
+            text-decoration: none;
+            display: block;
+        }
+
+        .btn-action:hover {
+            background: #fff;
+            color: #000;
+            box-shadow: 0 0 15px #fff;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="brand">
+            <h1>VENTANIYA</h1>
+            <p>LA VÍA DEL MILISEGUNDO // REPOSITORIO INMUTABLE</p>
+        </div>
+        <div class="casio-clock-container">
+            <div id="live-time" class="time-display">00:00:00.000</div>
+            <div id="live-date" class="date-display">00.XXX.0000</div>
+        </div>
+    </header>
+
+    <div class="main-layout">
+        <!-- Colección de Estampas (Repositorio GitHub simulado / 100 items) -->
+        <div class="gallery-section">
+            <div class="section-title">Colección Fija de Estampas (GitHub Storage) - 100 Ítems</div>
+            <div class="grid-estampas" id="gridEstampas">
+                <!-- Se generan dinámicamente -->
+            </div>
+        </div>
+
+        <!-- Panel de Edición del Sponsor -->
+        <div class="editor-panel">
+            <div class="editor-title">Panel Auspiciante / Sponsor</div>
+            
+            <div class="form-group">
+                <label>Nombre del Auspiciante:</label>
+                <input type="text" id="sponsorName" value="Cerveza Cachalote" placeholder="Ej: Cerveza Cachalote">
+            </div>
+
+            <div class="form-group">
+                <label>Mensaje Comercial:</label>
+                <textarea id="sponsorMsg" rows="2" placeholder="Mensaje corto...">Mar del Plata // Edición Exclusiva</textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Vista Previa Sello + Estampa:</label>
+                <div class="preview-container">
+                    <canvas id="preview-canvas" width="400" height="400"></canvas>
+                </div>
+            </div>
+
+            <button class="btn-action" id="btnDownload">Descargar Estampa Sellada</button>
+        </div>
+    </div>
+
+    <script>
+        // 1. Reloj en tiempo real estilo Casio 80s con milisegundos
+        const mesesShort = ["ENE", "FEB", "MAR", "ABR", "MAY", "JUN", "JUL", "AGO", "SET", "OCT", "NOV", "DIC"];
+
+        function updateClock() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            const ms = String(now.getMilliseconds()).padStart(3, '0');
+
+            document.getElementById('live-time').textContent = `${hours}:${minutes}:${seconds}.${ms}`;
+
+            const day = String(now.getDate()).padStart(2, '0');
+            const month = mesesShort[now.getMonth()];
+            const year = now.getFullYear();
+            document.getElementById('live-date').textContent = `${day}.${month}.${year}`;
+        }
+        setInterval(updateClock, 30);
+
+        // 2. Generar Colección de 100 Estampas simulando GitHub
+        const grid = document.getElementById('gridEstampas');
+        let selectedEstampa = null;
+
+        // Lista de imágenes base de ejemplo (puedes reemplazar con tus PNGs reales subidos a GitHub)
+        const sampleImages = [
+            "https://images.unsplash.com/photo-1518770660439-4636190af475?w=300&auto=format&fit=crop&q=60",
+            "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=300&auto=format&fit=crop&q=60",
+            "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=300&auto=format&fit=crop&q=60",
+            "https://images.unsplash.com/photo-1511512578047-dfb367046420?w=300&auto=format&fit=crop&q=60"
+        ];
+
+        let estampasData = [];
+
+        for (let i = 1; i <= 100; i++) {
+            const imgUrl = sampleImages[(i - 1) % sampleImages.length];
+            // Generador simple de Hash único inmutable simulado por Git
+            const hash = "git#" + Math.random().toString(36).substring(2, 10) + i.toString(16);
+            estampasData.push({ id: i, url: imgUrl, hash: hash });
+        }
+
+        function renderGrid() {
+            grid.innerHTML = '';
+            estampasData.forEach((item, index) => {
+                const card = document.createElement('div');
+                card.className = `estampa-card ${index === 0 ? 'selected' : ''}`;
+                card.innerHTML = `
+                    <img class="estampa-thumb" src="${item.url}" crossorigin="anonymous">
+                    <div class="estampa-info">
+                        <div class="estampa-id">ESTAMPA #${String(item.id).padStart(3, '0')}</div>
+                        <div class="estampa-hash" title="${item.hash}">${item.hash}</div>
+                    </div>
+                `;
+                card.onclick = () => selectEstampa(item, card);
+                grid.appendChild(card);
+            });
+            selectEstampa(estampasData[0], grid.firstChild);
+        }
+
+        function selectEstampa(item, cardElement) {
+            document.querySelectorAll('.estampa-card').forEach(c => c.classList.remove('selected'));
+            cardElement.classList.add('selected');
+            selectedEstampa = item;
+            redrawCanvas();
+        }
+
+        // 3. Motor Canvas para estampar la imagen en tiempo real
+        const canvas = document.getElementById('preview-canvas');
+        const ctx = canvas.getContext('2d');
+
+        function redrawCanvas() {
+            if (!selectedEstampa) return;
+
+            const img = new Image();
+            img.crossOrigin = "anonymous";
+            img.src = selectedEstampa.url;
+            img.onload = () => {
+                canvas.width = 600;
+                canvas.height = 600;
+
+                // Dibujar imagen base
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+                // Capa oscura sutil de contraste para el neón
+                ctx.fillStyle = "rgba(5, 8, 20, 0.25)";
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                // --- ESTAMPA SUPERIOR: HORA (Celeste Neón) ---
+                ctx.font = "bold 24px 'Orbitron', monospace";
+                ctx.fillStyle = "#00f3ff";
+                ctx.shadowColor = "#00f3ff";
+                ctx.shadowBlur = 12;
+                ctx.fillText(document.getElementById('live-time').textContent, 25, 45);
+
+                // --- FECHA (Blanco Neón) ---
+                ctx.font = "14px 'Share Tech Mono', monospace";
+                ctx.fillStyle = "#ffffff";
+                ctx.shadowColor = "#ffffff";
+                ctx.shadowBlur = 8;
+                ctx.fillText(document.getElementById('live-date').textContent, 25, 70);
+
+                // --- HASH INMUTABLE ---
+                ctx.font = "11px 'Share Tech Mono', monospace";
+                ctx.fillStyle = "#94a3b8";
+                ctx.shadowBlur = 0;
+                ctx.fillText(`HASH: ${selectedEstampa.hash}`, 25, canvas.height - 25);
+
+                // --- DATOS DEL SPONSOR (Ej: Cerveza Cachalote) ---
+                const sponsor = document.getElementById('sponsorName').value;
+                const msg = document.getElementById('sponsorMsg').value;
+
+                ctx.font = "bold 16px 'Orbitron', monospace";
+                ctx.fillStyle = "#ff007f";
+                ctx.shadowColor = "#ff007f";
+                ctx.shadowBlur = 10;
+                ctx.fillText(sponsor.toUpperCase(), 25, canvas.height - 75);
+
+                ctx.font = "12px 'Share Tech Mono', monospace";
+                ctx.fillStyle = "#ffffff";
+                ctx.shadowBlur = 5;
+                ctx.fillText(msg, 25, canvas.height - 50);
+
+                // --- SELLO REDONDO ATÓMICO: "VentaniYA Soluciones" ---
+                ctx.save();
+                ctx.translate(canvas.width - 75, 75);
+                
+                // Círculo exterior neón
+                ctx.beginPath();
+                ctx.arc(0, 0, 50, 0, Math.PI * 2);
+                ctx.strokeStyle = "#00f3ff";
+                ctx.lineWidth = 3;
+                ctx.shadowColor = "#00f3ff";
+                ctx.shadowBlur = 10;
+                ctx.stroke();
+
+                // Círculo interior
+                ctx.beginPath();
+                ctx.arc(0, 0, 42, 0, Math.PI * 2);
+                ctx.strokeStyle = "#ffffff";
+                ctx.lineWidth = 1;
+                ctx.stroke();
+
+                // Texto del sello
+                ctx.fillStyle = "#00f3ff";
+                ctx.font = "bold 9px 'Orbitron', monospace";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.fillText("VENTANIYA", 0, -12);
+
+                ctx.fillStyle = "#ffffff";
+                ctx.font = "bold 8px 'Share Tech Mono', monospace";
+                ctx.fillText("ATÓMICO", 0, 2);
+
+                ctx.fillStyle = "#ff007f";
+                ctx.font = "bold 8px 'Orbitron', monospace";
+                ctx.fillText("MDRP", 0, 16);
+
+                ctx.restore();
+            };
+        }
+
+        // Actualizar canvas al escribir en el panel de sponsor
+        document.getElementById('sponsorName').addEventListener('input', redrawCanvas);
+        document.getElementById('sponsorMsg').addEventListener('input', redrawCanvas);
+
+        // Botón de descarga de la estampa sellada
+        document.getElementById('btnDownload').onclick = () => {
+            const link = document.createElement('a');
+            link.download = `Estampa-${selectedEstampa.id}-VentaniYA.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        };
+
+        // Iniciar grilla
+        renderGrid();
+    </script>
+</body>
+</html>
